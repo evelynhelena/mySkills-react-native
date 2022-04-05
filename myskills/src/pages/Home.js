@@ -5,20 +5,25 @@ import {
   StyleSheet,
   TextInput,
   Platform,
-  TouchableOpacity,
+  ScrollView,
+  FlatList,
 } from "react-native";
+import { Button } from "../components/Button";
+import { SkillCard } from "../components/SkillCard";
 
 export function Home() {
   const [newSkill, setNewSkill] = useState("");
   const [allSkills, setAllSkills] = useState([]);
 
   function handleAddNewSkill() {
-    setAllSkills((oldSkill) => [...oldSkill, newSkill]);
+    setAllSkills((oldSkill) => [
+      ...oldSkill,
+      { id: Date.now(), title: newSkill },
+    ]);
     setNewSkill("");
   }
 
   return (
-    //SafeAreaView servi para a gota do iphone não atravalhar o conteudo
     <View style={styles.container}>
       <Text style={styles.title}>Welcome, Evelyn</Text>
       <TextInput
@@ -28,21 +33,21 @@ export function Home() {
         onChangeText={setNewSkill}
         value={newSkill}
       />
-      <TouchableOpacity
-        style={styles.button}
-        activeOpacity={0.7}
-        onPress={handleAddNewSkill}
-      >
-        <Text style={styles.buttonText}>Add</Text>
-      </TouchableOpacity>
+
+      <Button handleAddNewSkill={handleAddNewSkill} />
 
       <Text style={[styles.title, { marginVertical: 50 }]}>My Skills</Text>
 
-      {allSkills.map((skill) => (
-        <TouchableOpacity key={skill} style={styles.buttonSkill}>
-          <Text style={styles.textSkill}>{skill}</Text>
-        </TouchableOpacity>
-      ))}
+      {/*  
+        ScrollView: É indicado quando a lista é pequena
+        FlatList: Indicado para quando o numero de elementos for grande, pois o FlatList carrega apenas o que cabe na tela
+      */}
+
+      <FlatList
+        data={allSkills}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <SkillCard skillTitle={item.title} />}
+      />
     </View>
   );
 }
@@ -65,19 +70,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     padding: Platform.OS === "ios" ? 15 : 10,
     marginTop: 30,
-  },
-  button: {
-    backgroundColor: "#a370f7",
-    padding: 15,
-    borderRadius: 7,
-    alignItems: "center",
-    marginTop: 20,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 17,
-    fontWeight: "bold",
-    textTransform: "uppercase",
   },
   buttonSkill: {
     backgroundColor: "#1f1e25",
