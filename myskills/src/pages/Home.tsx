@@ -1,31 +1,55 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TextInput,
   Platform,
-  ScrollView,
   FlatList,
 } from "react-native";
 import { Button } from "../components/Button";
 import { SkillCard } from "../components/SkillCard";
 
+interface SkillData {
+  id: string;
+  title: string;
+}
+
 export function Home() {
   const [newSkill, setNewSkill] = useState("");
-  const [allSkills, setAllSkills] = useState([]);
+  const [allSkills, setAllSkills] = useState<SkillData[]>([]);
+  const [greeting, setGreeting] = useState("");
 
   function handleAddNewSkill() {
-    setAllSkills((oldSkill) => [
-      ...oldSkill,
-      { id: Date.now(), title: newSkill },
-    ]);
+    const data = {
+      id: String(new Date().getTime()),
+      title: newSkill
+    }
+    console.log(data);
+    setAllSkills((oldSkill) => [...oldSkill, data]);
     setNewSkill("");
   }
+
+  function handleRemoveSkill(id: string) {
+    setAllSkills(old => old.filter(skill => skill.id !== id))
+  }
+
+  useEffect(() => {
+    const currentHour = new Date().getHours();
+    if (currentHour < 12) {
+      setGreeting("Good Morning");
+    } else if (currentHour >= 12 && currentHour < 18) {
+      setGreeting("Good afternoon");
+    } else {
+      setGreeting("Good night");
+    }
+  }, [])
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome, Evelyn</Text>
+
+      <Text style={styles.greeting}>{greeting}</Text>
       <TextInput
         style={styles.input}
         placeholder="New Skill"
@@ -34,7 +58,9 @@ export function Home() {
         value={newSkill}
       />
 
-      <Button handleAddNewSkill={handleAddNewSkill} />
+      <Button
+        onPress={handleAddNewSkill}
+        title="Add" />
 
       <Text style={[styles.title, { marginVertical: 50 }]}>My Skills</Text>
 
@@ -46,7 +72,10 @@ export function Home() {
       <FlatList
         data={allSkills}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <SkillCard skillTitle={item.title} />}
+        renderItem={({ item }) =>
+          <SkillCard skillTitle={item.title}
+            onPress={() => handleRemoveSkill(item.id)}
+          />}
       />
     </View>
   );
@@ -71,16 +100,9 @@ const styles = StyleSheet.create({
     padding: Platform.OS === "ios" ? 15 : 10,
     marginTop: 30,
   },
-  buttonSkill: {
-    backgroundColor: "#1f1e25",
-    padding: 15,
-    borderRadius: 20,
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  textSkill: {
+  greeting: {
     color: "#fff",
-    fontSize: 22,
-    fontWeight: "bold",
-  },
+    marginTop: 10,
+    fontSize: 18,
+  }
 });
